@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Retrieve arguments
+domainURL=$1
+if [[ -z $domainURL ]]; then
+    echo "Subdomain missing. Usage : install subdomainURL"
+    exit 1
+fi
+
+# Check if wordpress is installed
+if [[ -z `sudo yunohost app list -f wordpress | grep -e "installed: True"` ]]; then
+    echo "WordPress Multi-site must be installed first."
+    exit 1
+else
+    wpdomain=$(sudo yunohost app setting wordpress domain)
+    subdomain=${domainURL%.$wpdomain}
+    sudo yunohost app setting wordpress-sd subdomain -v $subdomain
+    # echo $wpdomain
+fi
+
+# check if the given domain is actually a subdomain of wp's domain
+if [[ $domainURL == *.$wpdomain ]]; then
+    echo "$domainURL is a subdomain of $wpdomain"
+else #if [[ $domainURL == *.* ]]; then
+    echo "$domainURL is not a subdomain of $wpdomain, where WP is installed, so it can't be used for being a subdomain blog."
+    exit 1
+#else
+#    # creation of the subdomain
+# doesn't work because, to add a domain, the moulinette ask for the admin password. 
+# I don't know how to handle this.
+#    echo "$domainURL is not a subdomain of $wpdomain : creation of $domainURL.$wpdomain subdomain."
+#    subdomain=$domainURL.$wpdomain
+#    echo $domainURL
+#    sudo yunohost domain add $domainURL
+fi
+
+# fetch WP admin
+admin_wordpress=$(sudo yunohost app setting wordpress admin)
+echo "WordPress admin is: $admin_wordpress. This user will be also the administrator of $domainURL. This can be changed later."
+
+# Check domain/path availability
+sudo yunohost app checkurl $domainURL -a wordpress-sd
+if [[ ! $? -eq 0 ]]; then
+    # il y a une erreur…
+    echo "Error: $domainURL is not available for installing a blog."
+    exit 1
+fi
+
+# unprotect url
+sudo yunohost app setting wordpress-sd skipped_uris -v "/"
+
+# Copy Nginx configuration file
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domainURL.d/wordpress-sd.conf
+
+# Reload Nginx and regenerate SSOwat conf
+sudo yunohost app ssowatconf
+sudo service nginx reload
+
+# installation of wp-cli
+if [ ! -e /usr/local/bin/wp ]; then
+    sudo cp ../sources/ajouts/wp-cli.phar /usr/local/bin/wp
+fi
+if [ ! -x /usr/local/bin/wp ]; then
+    sudo chmod +x /usr/local/bin/wp
+fi
+
+# add new site to the wp net
+# slug just need the name of the subdomain, without the name of the domain…
+wp site create --path=/var/www/wordpress --slug=$subdomain
+#$domainURL
+

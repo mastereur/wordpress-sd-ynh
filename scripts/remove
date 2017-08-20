@@ -1,0 +1,12 @@
+#!/bin/bash
+
+subdomain=$(sudo yunohost app setting wordpress-sd subdomain)
+wpdomain=$(sudo yunohost app setting wordpress domain)
+
+wp site delete --path=/var/www/wordpress --slug=$subdomain --yes
+
+sudo rm -f /etc/nginx/conf.d/$subdomain.$wpdomain.d/wordpress-sd.conf
+
+# Reload Nginx and regenerate SSOwat conf
+sudo yunohost app ssowatconf
+sudo service nginx reload

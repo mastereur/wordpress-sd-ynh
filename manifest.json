@@ -1,0 +1,26 @@
+{
+    "name": "Sub-domain for WordPress",
+    "id": "wordpress-sd",
+    "description": {
+        "en": "Configure a sub-domain for WordPress Multi-site",
+        "fr": "Configure un sous-domaine pour WordPress Multi-site"
+    },
+	  "version": "1",
+    "maintainer": {
+        "name": "mastereur",
+        "email": "mastereur@gmail.com"
+    },
+    "multi_instance": "true",
+    "arguments": {
+        "install" : [
+            {
+                "name": "subdomain",
+                "ask": {
+                    "en": "Choose a sub-domain for your WordPress blog",
+                    "fr": "Choisissez un sous-domaine pour votre blog WordPress"
+                },
+                "example": "sub.domain.org"
+            }
+        ]
+    }
+}
