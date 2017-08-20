@@ -1,11 +1,12 @@
 {
     "name": "Sub-domain for WordPress",
     "id": "wordpress-sd",
+	"packaging_format": 1,
     "description": {
         "en": "Configure a sub-domain for WordPress Multi-site",
         "fr": "Configure un sous-domaine pour WordPress Multi-site"
     },
-	  "version": "1",
+	"license": "free",
     "maintainer": {
         "name": "mastereur",
         "email": "mastereur@gmail.com"
